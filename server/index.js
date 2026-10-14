@@ -18,7 +18,6 @@ function safeSend(socket, obj) {
     socket.send(reply);
   } catch (error) {
     console.error(error);
-    return;
   }
 }
 
@@ -30,13 +29,11 @@ wss.on("connection", (ws) => {
     try {
       msg = JSON.parse(data);
     } catch (error) {
-      // ws.send(JSON.stringify({ type: "error", reason: "invalid-json" }));
       safeSend(ws, { type: "error", reason: "invalid-json" });
       return;
     }
 
     if (typeof msg !== "object" || msg === null || typeof msg.type !== "string") {
-      // ws.send(JSON.stringify({ type: "error", reason: "invalid-message" }));
       safeSend(ws, { type: "error", reason: "invalid-message" });
       return;
     }
@@ -50,9 +47,7 @@ wss.on("connection", (ws) => {
     } catch (error) {
       console.error(error);
       safeSend(ws, { type:"error", reason:"internal-error" });
-      return;
     }
-    // ws.send(JSON.stringify(messageHandler(ws, msg)));
   });
 
   ws.on("close", () => console.log("client left"));
