@@ -1,3 +1,7 @@
 .env
 node_modules
 room-transfer-guide.md
+design/DESIGN.md
+design/reference-home.html
+design/reference-room.html
+CLAUDE.md

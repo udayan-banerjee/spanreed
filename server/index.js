@@ -3,9 +3,13 @@ const express = require("express");
 const { WebSocketServer, WebSocket } = require("ws");
 const path = require("path");
 const { messageHandler } = require("./routers/messageRouter");
+const { disconnectRoom } = require("./rooms")
+
 
 const app = express();
 app.use(express.static(path.join(__dirname, "..", "client")));
+app.use("/fonts", express.static(path.join(__dirname, "..", "fonts")));
+app.use("/design", express.static(path.join(__dirname, "..", "design")));
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -50,7 +54,16 @@ wss.on("connection", (ws) => {
     }
   });
 
-  ws.on("close", () => console.log("client left"));
+  ws.on("close", () => {
+    console.log("client left");
+    try {
+      let peer = disconnectRoom(ws);
+      if (peer) safeSend(peer, {type: "peer-left"});
+    } catch (error) {
+      console.error(error);
+      safeSend(ws, { type:"error", reason:"close-error" })
+    }
+  });
 });
 
 server.listen(3000, () => console.log("Running"));

@@ -25,8 +25,21 @@ function getPeer(ws) {
   return room.clients.find((c) => c !== ws) || null;
 }
 
+function disconnectRoom(ws) {
+  const room = rooms.get(ws.roomCode);
+  if (!room) return null;
+  room.clients.splice(room.clients.indexOf(ws), 1);
+  if (room.clients.length === 0) {
+    rooms.delete(ws.roomCode);
+  }
+  else {
+    return getPeer(ws);
+  }
+}
+
 module.exports = {
     createRoom,
     joinRoom,
-    getPeer
+    getPeer,
+    disconnectRoom
 }

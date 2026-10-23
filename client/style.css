@@ -1,0 +1,399 @@
+/* ==========================================================================
+   Spanreed app styles — "Quiet Paper"
+
+   tokens.css is linked before this file and owns every colour, font-size and
+   spacing value. Nothing here hardcodes one.
+
+   Element map (the markup app.js builds, styled to DESIGN.md's anatomy):
+     .msg        -> stream item .item   (+ .msg-own = out, .msg-peer = in)
+     .msg-body   -> the label+bubble column
+     .msg-meta   -> the uppercase meta label
+     .msg-body p -> the bubble
+     .copy-btn   -> icon-only button
+   ========================================================================== */
+
+/* app.js toggles .hidden on flex containers; without this their display wins */
+[hidden] { display: none !important; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-7) var(--sp-6) var(--sp-6);
+  letter-spacing: var(--tr-ui);
+}
+
+/* ---------- home ---------- */
+h1 {
+  width: 100%;
+  max-width: var(--measure-home);
+  margin: 0 0 var(--sp-2);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tr-display);
+  text-align: center;
+}
+
+/* the room overlay is opaque, but keep the page h1 out of the room entirely */
+body:has(.joined-room:not([hidden])) > h1 { display: none; }
+
+.home-screen,
+.room-screen {
+  width: 100%;
+  max-width: var(--measure-home);
+  display: flex;
+  flex-direction: column;
+}
+
+.premise {
+  margin: 0 auto var(--sp-6);
+  max-width: 30rem;
+  font-size: var(--fs-lead);
+  line-height: var(--lh-lead);
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Primary — accent fill, paper text, --r-lg */
+#create {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent);
+  color: var(--paper);
+  border: none;
+  border-radius: var(--r-lg);
+  font-family: var(--font-ui);
+  font-size: var(--fs-lead);
+  font-weight: 600;
+  letter-spacing: var(--tr-ui);
+  cursor: pointer;
+}
+#create:hover { background: var(--accent-hover); }
+
+/* "or join one" — hairline / label / hairline */
+.fork {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--sp-5) 0;
+}
+.fork::before,
+.fork::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--rule);
+}
+.fork span {
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.join { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+.join label {
+  flex: 1 1 100%;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-step);
+  font-weight: 500;
+  color: var(--muted);
+}
+
+#roomcode {
+  flex: 999 1 15rem;
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-code);
+  letter-spacing: var(--tr-code);
+  color: var(--ink);
+}
+
+/* Secondary — surface fill, ink text, 1px ink border, --r-lg */
+#join {
+  flex: 1 1 8rem;
+  min-height: var(--tap-min);
+  padding: var(--sp-2) var(--sp-5);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-lg);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+#join:hover { background: var(--chip); }
+
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---------- waiting screen ----------
+   DESIGN.md carries this state in the room header's status line; this app has
+   it as its own screen instead, so it is styled from the nearest components:
+   mono + --tr-code for the code, --muted body, --faint secondary. */
+
+.room-screen {
+  align-items: center;
+  text-align: center;
+}
+
+#copycode {
+  margin: 0 0 var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-display);
+  font-weight: 400;
+  line-height: var(--lh-display);
+  letter-spacing: var(--tr-code);
+  text-indent: var(--tr-code);
+  color: var(--ink);
+  user-select: all; /* one click takes the whole code */
+}
+
+.room-screen p {
+  margin: 0;
+  max-width: 30rem;
+  font-size: var(--fs-lead);
+  line-height: var(--lh-lead);
+  color: var(--muted);
+}
+.room-screen .quiet {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-step);
+  color: var(--faint);
+}
+
+/* ---------- room ----------
+   header -> scrolling stream -> composer pinned. Only the stream scrolls. */
+.joined-room {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.joined-room h2 {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: var(--sp-3) var(--sp-6);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-mark);
+  border-bottom: 1px solid var(--rule);
+}
+
+.message-display {
+  flex: 1 1 auto;
+  min-height: 0; /* lets the flex child shrink so it can scroll */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  width: 100%;
+  max-width: var(--measure-room);
+  margin: 0 auto;
+  padding: var(--sp-5) var(--sp-6) var(--sp-2);
+}
+
+.message-display:empty::before {
+  content: "Nothing sent yet.";
+  margin: auto;
+  font-size: var(--fs-step);
+  color: var(--faint);
+}
+
+/* ---------- stream items ---------- */
+.msg {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  max-width: 76%;
+  /* fades in and rises 6px, anchored at the bottom of the list */
+  animation: item-in var(--spring-response) var(--ease-ui) both;
+}
+.msg-own { flex-direction: row-reverse; align-self: flex-end; }
+.msg-peer { align-self: flex-start; }
+
+@keyframes item-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.msg-body {
+  min-width: 0;
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.msg-own .msg-body { align-items: flex-end; }
+.msg-peer .msg-body { align-items: flex-start; }
+
+/* meta label: "You · 14:02", uppercase, faint */
+.msg-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.msg-meta h4 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 400;
+}
+.msg-meta h4::after { content: " ·"; }
+
+/* the bubble. Direction is carried by three cues at once — alignment, fill
+   and the tail corner — so it survives greyscale and colour-blindness. */
+.msg-body p {
+  margin: 0;
+  padding: var(--sp-3);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap; /* keeps newlines typed into the textarea */
+}
+
+.msg-peer .msg-body p {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-xl) var(--r-xl) var(--r-xl) var(--r-tail);
+}
+
+.msg-own .msg-body p {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-brd);
+  border-radius: var(--r-xl) var(--r-xl) var(--r-tail) var(--r-xl);
+}
+
+/* Icon-only — chip fill, accent icon, --r-sm */
+.copy-btn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  margin-top: calc(var(--fs-label) * var(--lh-body) + var(--sp-1));
+  padding: 0;
+  background: var(--chip);
+  border: none;
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+/* the mask sits on the pseudo-element: masking the button itself would clip
+   away its own focus ring */
+.copy-btn::before {
+  content: "";
+  width: 0.9375rem;
+  height: 0.9375rem;
+  background-color: currentColor;
+  -webkit-mask: url("icons/copy.svg") center / contain no-repeat;
+  mask: url("icons/copy.svg") center / contain no-repeat;
+}
+.copy-btn:hover { color: var(--accent-hover); }
+.copy-btn.copied { background: var(--accent); color: var(--paper); }
+
+/* ---------- composer ---------- */
+#messageForm {
+  flex: 0 0 auto;
+  display: flex;
+  gap: var(--sp-2);
+  align-items: flex-end;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: var(--measure-room);
+  margin: 0 auto;
+  padding: var(--sp-3) var(--sp-6) var(--sp-5);
+  border-top: 1px solid var(--rule);
+}
+
+#message {
+  flex: 999 1 20rem;
+  min-width: 0;
+  resize: none;
+  max-height: 9rem;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink);
+}
+
+/* Send — ink fill, paper text, --r-xl */
+#messageForm button {
+  flex: 0 0 auto;
+  min-height: var(--tap-min);
+  padding: var(--sp-2) var(--sp-5);
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: var(--r-xl);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- errors ----------
+   No error component in DESIGN.md, so this follows the nearest one: a surface
+   card on a hairline border. --danger is used as text only, per the one
+   permitted exception. */
+#errormsg {
+  position: fixed;
+  top: var(--sp-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  width: calc(100% - var(--sp-6));
+  max-width: var(--measure-home);
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  font-size: var(--fs-sm);
+  color: var(--danger);
+}
+#errormsg:empty { display: none; }
+
+/* ---------- responsive ----------
+   640–900px: gutters shrink to --sp-4. <640px: gutters --sp-3, bubbles 88%,
+   send button full width below the textarea. */
+@media (max-width: 900px) {
+  body { padding: var(--sp-5) var(--sp-4) var(--sp-4); }
+  .joined-room h2,
+  .message-display,
+  #messageForm { padding-left: var(--sp-4); padding-right: var(--sp-4); }
+}
+
+@media (max-width: 640px) {
+  body { padding: var(--sp-5) var(--sp-3) var(--sp-3); }
+  h1 { font-size: var(--fs-h2); }
+  #copycode { font-size: var(--fs-h2); }
+  .joined-room h2,
+  .message-display,
+  #messageForm { padding-left: var(--sp-3); padding-right: var(--sp-3); }
+  .msg { max-width: 88%; }
+  #messageForm button { flex: 1 1 100%; }
+}
