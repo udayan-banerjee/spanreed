@@ -6,6 +6,11 @@ browsers. No accounts, nothing kept after both of them leave.
 One person opens a channel and gets a code. The other types it in. From then
 on either side can send text or files until someone closes the tab.
 
+**Live: https://spanreed-8qa0.onrender.com**
+
+Hosted on Render's free tier, so it sleeps after 15 minutes idle — the first
+visit after a quiet spell takes about a minute to wake.
+
 ---
 
 ## Running it
