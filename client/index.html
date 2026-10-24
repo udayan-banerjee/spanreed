@@ -44,6 +44,7 @@
 
     <div class="joined-room" hidden>
       <h2>Spanreed</h2>
+      <p class="room-notice" role="status" aria-live="polite" hidden></p>
       <div class="message-display" aria-live="polite"></div>
       <form id="messageForm">
         <label class="sr-only" for="message">Text to send</label>
@@ -51,9 +52,14 @@
           id="message"
           placeholder="Type or paste anything"
           rows="2"
-          required
         ></textarea>
-        <button type="submit">Send text</button>
+        <button type="submit">Send</button>
+
+        <label class="drop" for="files">
+          <span class="drop-icon" aria-hidden="true"></span>
+          <span class="drop-text">Choose a file to send</span>
+        </label>
+        <input type="file" id="files" class="sr-only" multiple/>
       </form>
     </div>
   </body>

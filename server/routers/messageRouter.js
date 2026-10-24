@@ -48,6 +48,43 @@ function messageHandler(ws, msg) {
       return replies;
     }
 
+    case "file-start": {
+      const peer = getPeer(ws);
+      if (!peer) {
+        replies.reply = { type: "error", reason: "no-peer" };
+        return replies;
+      }
+
+      replies.outbox.push({
+        to: peer,
+        msg: {
+          type: msg.type,
+          id: msg.id,
+          name: msg.name,
+          size: msg.size,
+          mime: msg.mime
+        }
+      })
+      return replies;
+    }
+
+    case "file-end": {
+      const peer = getPeer(ws);
+      if (!peer) {
+        replies.reply = { type: "error", reason: "no-peer" };
+        return replies;
+      }
+
+      replies.outbox.push({
+        to: peer,
+        msg: {
+          type: msg.type,
+          id: msg.id,
+        }
+      })
+      return replies;
+    }
+
     default: {
       replies.reply = { type: "error", reason: "unknown-type" };
       return replies;
