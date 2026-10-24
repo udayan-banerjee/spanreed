@@ -112,12 +112,18 @@ function formatBytes(bytes) {
   return `${size < 10 ? size.toFixed(1) : Math.round(size)} ${units[unit]}`;
 }
 
-function findFileRow(id) {
-  return document.querySelector(`.message-display [data-file-id="${id}"]`);
+// querySelector returns the FIRST match, so scope by direction as well as id:
+// a sender's row is always .msg-own and a receiver's always .msg-peer, which
+// makes an id clash a non-event rather than a silent mis-target.
+function findFileRow(id, from) {
+  const side = from === "You" ? ".msg-own" : ".msg-peer";
+  return document.querySelector(
+    `.message-display ${side}[data-file-id="${id}"]`,
+  );
 }
 
-function updateProgressUI(id, loaded, total) {
-  const row = findFileRow(id);
+function updateProgressUI(id, loaded, total, from) {
+  const row = findFileRow(id, from);
   if (!row) return;
 
   const pct = total ? Math.round((loaded / total) * 100) : 0;
@@ -133,7 +139,7 @@ function updateProgressUI(id, loaded, total) {
 
 // bytes are all through: drop the bar and turn on the download
 function completeFileUI(id, blob, meta, from) {
-  const row = findFileRow(id);
+  const row = findFileRow(id, from);
   if (!row) return;
 
   row.querySelector(".track")?.remove();
@@ -338,7 +344,12 @@ ws.addEventListener("message", (e) => {
     if (!transfer) return; // a stray chunk with no open transfer
     transfer.chunks.push(e.data);
     transfer.received += e.data.byteLength;
-    updateProgressUI(latestFileID, transfer.received, transfer.meta.size);
+    updateProgressUI(
+      latestFileID,
+      transfer.received,
+      transfer.meta.size,
+      "Peer",
+    );
   }
 });
 
@@ -372,11 +383,15 @@ joinBtn.addEventListener("click", () => {
 
 const CHUNK = 64 * 1024,
   HIGH_WATER = 1 * 1024 * 1024; // 1 MB queue cap
-let fileCount = 10000;
+// Both clients used to start this counter at the same number, so each
+// browser's first file was "f_10000" and the two collided. The random prefix
+// is minted once per page load, so no two clients can produce the same id.
+const clientId = crypto.randomUUID().slice(0, 6);
+let fileCount = 1;
 let sending = false;
 
 async function sendFile(file) {
-  const id = "f_" + fileCount++;
+  const id = `f_${clientId}_${fileCount++}`;
   const meta = {
     type: "file-start",
     id,
@@ -395,7 +410,7 @@ async function sendFile(file) {
       // ← backpressure
       await new Promise((r) => setTimeout(r, 20)); //   let the pipe drain
     }
-    updateProgressUI(id, Math.min(off + CHUNK, file.size), file.size);
+    updateProgressUI(id, Math.min(off + CHUNK, file.size), file.size, "You");
   }
   ws.send(JSON.stringify({ type: "file-end", id }));
   // File extends Blob, so the sender needs no reassembly
